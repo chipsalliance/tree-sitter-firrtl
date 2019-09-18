@@ -1,0 +1,50 @@
+{
+  "name": "tree-sitter-firrtl",
+  "version": "0.1.0",
+  "description": "FIRRTL grammar for tree-sitter",
+  "main": "index.js",
+  "scripts": {
+    "gen": "tree-sitter generate",
+    "install": "node bin/install.js",
+    "prepare": "node bin/install.js",
+    "test": "tree-sitter test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chipsalliance/tree-sitter-firrtl.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/chipsalliance/tree-sitter-firrtl/issues"
+  },
+  "homepage": "https://github.com/chipsalliance/tree-sitter-firrtl#readme",
+  "files": [
+    "bin/*",
+    "grammar.js",
+    "binding.gyp",
+    "src/*"
+  ],
+  "keywords": [
+    "parser",
+    "tree-sitter",
+    "verilog"
+  ],
+  "dependencies": {
+    "nan": "^2.14.0"
+  },
+  "devDependencies": {
+    "@drom/eslint-config": "^0.10.0",
+    "eslint": "^5.16.0",
+    "tree-sitter-cli": "^0.15.8"
+  },
+  "eslintConfig": {
+    "extends": "@drom/eslint-config/eslint4/node4",
+    "rules": {
+      "indent": [
+        1,
+        2
+      ]
+    }
+  }
+}
