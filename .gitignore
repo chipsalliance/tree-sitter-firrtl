@@ -1,5 +1,6 @@
 node_modules
 build
 package-lock.json
-src
+src/*
 *.log
+!src/scanner.cc
