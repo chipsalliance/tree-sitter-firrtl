@@ -48,5 +48,5 @@ circuit C1 :
   (circuit (id)
     (module (id)
       (port (dir) (id) (type))
-      (port (dir) (id) (type (intLit)))
-      (port (dir) (id) (type (intLit))))))
+      (port (dir) (id) (type (intLit (UnsignedInt (PosInt)))))
+      (port (dir) (id) (type (intLit (UnsignedInt (PosInt))))))))

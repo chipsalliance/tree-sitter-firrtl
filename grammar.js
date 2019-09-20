@@ -1,29 +1,49 @@
 'use strict';
 
+function optseq() {
+  return optional(prec.left(seq.apply(null, arguments)));
+}
+
+function repseq() {
+  return repeat(prec.left(seq.apply(null, arguments)));
+}
+
+function sep1(separator, rule) {
+  return prec.left(seq(
+    rule,
+    repeat(prec.left(seq(separator, rule)))
+  ));
+}
+
 const rules = {
 
   source_file: $ => repeat($.circuit),
 
   circuit: $ => seq(
     'circuit', $.id, ':', optional($.info),
-    optional(seq($._indent, repeat($.module)))
+    optseq($._indent, repeat($.module))
   ),
 
   module: $ => choice(
     seq(
       'module', $.id, ':', optional($.info),
-      optional(seq(
+      optseq(
         $._indent,
         repeat($.port),
         repeat($.simple_stmt),
         $._dedent
-      ))
+      )
+    ),
+    seq(
+      'extmodule', $.id, ':', optional($.info),
+      optseq(
+        $._indent,
+        repeat($.port),
+        optional($.defname),
+        optional($.parameter),
+        $._dedent
+      )
     )
-    // TODO
-    // seq(
-    //   'extmodule', $.id, ':', optional($.info),
-    //   INDENT, repeat($.port), optional($.defname), optional($.parameter), DEDENT
-    // )
   ),
 
   port: $ => seq(
@@ -35,30 +55,119 @@ const rules = {
   type: $ => choice(
     seq(
       choice('UInt', 'SInt', 'Analog'),
-      optional(seq('<', $.intLit, '>'))
+      optseq('<', $.intLit, '>')
     ),
     seq(
       'Fixed',
-      optional(seq('<', $.intLit, '>')),
-      optional(seq('<', '<', $.intLit, '>', '>'))
+      optseq('<', $.intLit, '>'),
+      optseq('<', '<', $.intLit, '>', '>')
     ),
     'Clock',
     'AsyncReset',
     'Reset',
-    seq('{', repeat($.field), '}'),   // Bundle
+    seq('{', optional(sep1(',', $.field)), '}'), // Bundle  // no commas in ANTLR
     seq($.type, '[', $.intLit, ']')   // Vector
   ),
 
   field: $ => seq(optional('flip'), $.fieldId, ':', $.type),
 
-  simple_stmt: $ => seq($.stmt, $._newline),
+  defname: $ => seq('defname', '=', $.id, $._newline),
 
-  stmt: $ => choice(
-    seq('wire', $.id, $.type, optional($.info))
-    // TODO
+  parameter: $ => seq(
+    'parameter', $.id, '=',
+    choice(
+      $.intLit,
+      $.StringLit,
+      $.DoubleLit,
+      $.RawString
+    ),
+    $._newline
   ),
 
-  info: $ =>  $.id, // FIXME FileInfo,
+  simple_stmt: $ => seq($.stmt, $._newline),
+
+  simple_reset0: $ => seq('reset', '=>', '(', $.exp, ',', $.exp, ')'),
+
+  simple_reset: $ => choice(
+    $.simple_reset0,
+    seq('(', $.simple_reset0, ')')
+  ),
+
+  reset_block: $ => choice(
+    seq($._indent, $.simple_reset, optional($.info), $._newline, $._dedent),
+    seq('(', $.simple_reset, ')')
+  ),
+
+  stmt: $ => choice(
+    seq(
+      choice('wire', 'cmem', 'smem'),
+      $.id, ':', $.type,
+      optional($.info)
+    ),
+    seq('reg',
+      $.id, ':', $.type, ',', $.exp, optseq('with', ':', $.reset_block), // no comma in ANTLR
+      optional($.info)
+    ),
+    seq('mem', $.id, ':', optional($.info), $._indent, repeat($.memField), $._dedent),
+    seq($.mdir, 'mport', $.id, '=', $.id, '[', $.exp, ']', ',', $.exp, optional($.info)),
+    seq('inst', $.id, 'of', $.id, optional($.info)),
+    seq('node', $.id, '=', $.exp, optional($.info)),
+    seq($.exp, '<=', $.exp, optional($.info)),
+    seq($.exp, '<-', $.exp, optional($.info)),
+    seq($.exp, 'is', 'invalid', optional($.info)),
+    $.when,
+    seq('stop', '(', $.exp, ',', $.exp, ',', $.intLit, ')', optional($.info)),
+    seq('printf', '(', $.exp, ',', $.exp, ',', $.StringLit, repseq(',', $.exp), ')', optional($.info)),
+    seq('skip', optional($.info)),
+    seq('attach', '(', sep1(',', $.exp, ')'), optional($.info))
+  ),
+
+  memField: $ => seq(
+    choice(
+      seq('data-type', '=>', $.type),
+      seq(
+        choice('depth', 'read-latency', 'write-latency'),
+        '=>', $.intLit
+      ),
+      seq('read-under-write', '=>', $.ruw),
+      seq(choice('reader', 'writer', 'readwriter'), '=>', sep1(',', $.id))
+    ),
+    $._newline
+  ),
+
+  suite: $ => choice(
+    $.simple_stmt,
+    seq($._indent, repeat1($.simple_stmt), $._dedent)
+  ),
+
+  when: $ => seq(
+    'when', $.exp, ':', optional($.info),
+    optional($.suite),
+    optseq('else',
+      choice($.when,
+        seq(':', optional($.info), optional($.suite))
+      )
+    )
+  ),
+
+  info: $ =>  $.FileInfo,
+
+  mdir: $ => choice('infer', 'read', 'write', 'rdwr'),
+
+  ruw: $ => choice('old', 'new', 'undefined'),
+
+  exp: $ => choice(
+    seq('UInt', optseq('<', $.intLit, '>'), '(', $.intLit, ')'),
+    seq('SInt', optseq('<', $.intLit, '>'), '(', $.intLit, ')'),
+    $.id,     // Ref
+    seq($.exp, '.', $.fieldId),
+    seq($.exp, '.', $.DoubleLit), // TODO Workaround for #470
+    seq($.exp, '[', $.intLit, ']'),
+    seq($.exp, '[', $.exp, ']'),
+    seq('mux(', $.exp, ',', $.exp, ',', $.exp, ')'), // no commas in ANTLR
+    seq('validif', '(', $.exp, ',', $.exp, ')'),
+    seq($.primop, '(', sep1(',', choice($.exp, $.intLit)), ')') // no commas in ANTLR
+  ),
 
   id: $ => /[a-zA-Z_]\w*/,
 
@@ -71,11 +180,68 @@ const rules = {
   ),
 
   intLit: $ => choice(
-    /[0-9]+/ // FIXME
-    // $.UnsignedInt,
-    // $.SignedInt,
-    // $.HexLit
+    $.UnsignedInt,
+    $.SignedInt,
+    $.HexLit
   ),
+
+  primop: $ => choice(
+    'add',
+    'sub',
+    'mul',
+    'div',
+    'rem',
+    'lt',
+    'leq',
+    'gt',
+    'geq',
+    'eq',
+    'neq',
+    'pad',
+    'asUInt',
+    'asAsyncReset',
+    'asSInt',
+    'asClock',
+    'shl',
+    'shr',
+    'dshl',
+    'dshr',
+    'cvt',
+    'neg',
+    'not',
+    'and',
+    'or',
+    'xor',
+    'andr',
+    'orr',
+    'xorr',
+    'cat',
+    'bits',
+    'head',
+    'tail',
+    'asFixedPoint',
+    'bpshl',
+    'bpshr',
+    'bpset'
+  ),
+
+// Tokens
+
+  UnsignedInt: $ => choice('0', $.PosInt),
+
+  SignedInt: $ => seq(choice('+', '-'), $.PosInt),
+
+  PosInt: $ => /[1-9][0-9]*/,
+
+  HexLit: $ => /"h[+-]?[a-fA-F0-9]+"/,
+
+  DoubleLit: $ => /[+-]*[0-9]+\.[0-9]+(E[+-]?[0-9]+)?/,
+
+  StringLit: $ => seq('"', /([\x09\x20\x21\x23-\xFE]|\\")*/, '"'),
+
+  RawString: $ => /'[^\\']*'/,
+
+  FileInfo: $ => /@\[.*\]/,
 
   comment: $ => token(
     seq(';', /.*/)
