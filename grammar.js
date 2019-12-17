@@ -244,7 +244,7 @@ const rules = {
     'bpset('
   ),
 
-// Tokens
+  // Tokens
 
   UnsignedInt: $ => choice('0', /[1-9][0-9]*/),
 

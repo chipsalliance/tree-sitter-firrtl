@@ -7,7 +7,7 @@
     "gen": "tree-sitter generate",
     "install": "node bin/install.js",
     "prepare": "node bin/install.js",
-    "test": "tree-sitter test"
+    "test": "eslint grammar.js && tree-sitter test"
   },
   "repository": {
     "type": "git",
@@ -36,7 +36,7 @@
   "devDependencies": {
     "@drom/eslint-config": "^0.10.0",
     "eslint": "^5.16.0",
-    "tree-sitter-cli": "^0.15.14"
+    "tree-sitter-cli": "^0.16.1"
   },
   "eslintConfig": {
     "extends": "@drom/eslint-config/eslint4/node4",
