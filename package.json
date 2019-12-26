@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-firrtl",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "FIRRTL grammar for tree-sitter",
   "main": "index.js",
   "scripts": {
