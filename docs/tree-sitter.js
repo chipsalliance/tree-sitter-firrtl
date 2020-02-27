@@ -30,6 +30,10 @@ var Module = typeof Module !== 'undefined' ? Module : {};
   }
 }(this, function () {
 
+Module.locateFile = function (url) {
+  return 'https://raw.githubusercontent.com/chipsalliance/tree-sitter-firrtl/master/docs/' + url;
+};
+
 
 
 // Sometimes an existing Module object exists with properties
@@ -4762,12 +4766,7 @@ var initPromise = new Promise(resolve => {
 });
 
 class Parser {
-  static init(path) {
-    if (path !== undefined) {
-      Module.locateFile = function (url) {
-        return path + '/' + url;
-      };
-    }
+  static init() {
     return initPromise;
   }
 
