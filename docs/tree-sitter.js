@@ -4763,7 +4763,7 @@ var initPromise = new Promise(resolve => {
 
 class Parser {
   static init(path) {
-    if (url !== undefined) {
+    if (path !== undefined) {
       Module.locateFile = function (url) {
         return path + '/' + url;
       };
