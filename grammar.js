@@ -40,7 +40,7 @@ const rules = {
         $._indent,
         repeat($.port),
         optional($.defname),
-        optional($.parameter),
+        repeat($.parameter),
         $._dedent
       )
     )
