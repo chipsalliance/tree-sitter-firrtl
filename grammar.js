@@ -176,9 +176,13 @@ const rules = {
 
   ruw: $ => choice('old', 'new', 'undefined'),
 
+  litType: $ => seq(
+    choice('UInt', 'SInt'),
+    optseq('<', $.intLit, '>')
+  ),
+
   exp: $ => choice(
-    seq('UInt', optseq('<', $.intLit, '>'), '(', $.intLit, ')'),
-    seq('SInt', optseq('<', $.intLit, '>'), '(', $.intLit, ')'),
+    seq($.litType, '(', $.intStrLit, ')'),
     $.id,     // Ref
     seq($.exp, '.', $.fieldId),
     seq($.exp, '.', $.DoubleLit), // TODO Workaround for #470
@@ -200,7 +204,14 @@ const rules = {
 
   intLit: $ => choice(
     $.UnsignedInt,
+    $.SignedInt
+  ),
+
+  intStrLit: $ => choice(
+    $.UnsignedInt,
     $.SignedInt,
+    $.BinLit,
+    $.OctLit,
     $.HexLit
   ),
 
@@ -253,6 +264,10 @@ const rules = {
   // PosInt: $ => /[1-9][0-9]*/,
 
   HexLit: $ => /"h[+-]?[a-fA-F0-9]+"/,
+
+  OctLit: $ => /"o[+-]?[0-7]+"/,
+
+  BinLit: $ => /"b[+-]?[01]+"/,
 
   DoubleLit: $ => /[+-]*[0-9]+\.[0-9]+(E[+-]?[0-9]+)?/,
 
