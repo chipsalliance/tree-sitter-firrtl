@@ -113,6 +113,7 @@ const rules = {
     $.when,
     $.stop,
     $.printf,
+    $.verif,
     $.skip,
     $.attach
   ),
@@ -164,7 +165,26 @@ const rules = {
 
   stop: $ => seq('stop', '(', $.exp, ',', $.exp, ',', $.intLit, ')', optional($.info)),
 
-  printf: $ => seq('printf', '(', $.exp, ',', $.exp, ',', $.StringLit, repseq(',', $.exp), ')', optional($.info)),
+  printf: $ => seq(
+    'printf',
+    '(',
+    $.exp, ',',
+    $.exp, ',',
+    $.StringLit,
+    repseq(',', $.exp),
+    ')',
+    optional($.info)
+  ),
+
+  verif: $ => seq(
+    choice('assert', 'assume', 'cover'),
+    '(',
+    $.exp, ',',
+    $.exp, ',',
+    $.exp, ',',
+    $.StringLit,
+    ')'
+  ),
 
   skip: $ => seq('skip', optional($.info)),
 
