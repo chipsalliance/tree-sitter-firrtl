@@ -20,10 +20,11 @@
   },
   "homepage": "https://github.com/chipsalliance/tree-sitter-firrtl#readme",
   "files": [
-    "bin/*",
+    "bin",
+    "src",
     "grammar.js",
     "binding.gyp",
-    "src/*"
+    "bindings/node"
   ],
   "keywords": [
     "parser",
