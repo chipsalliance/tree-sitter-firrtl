@@ -3,7 +3,7 @@
 #include <cwctype>
 #include <cstring>
 #include <cassert>
-
+#include <stdio.h>
 namespace {
 
 using std::vector;
@@ -27,6 +27,7 @@ struct Delimiter {
     Raw = 1 << 3,
     Format = 1 << 4,
     Triple = 1 << 5,
+    Bytes = 1 << 6,
   };
 
   Delimiter() : flags(0) {}
@@ -41,6 +42,10 @@ struct Delimiter {
 
   bool is_triple() const {
     return flags & Triple;
+  }
+
+  bool is_bytes() const {
+    return flags & Bytes;
   }
 
   int32_t end_character() const {
@@ -60,6 +65,10 @@ struct Delimiter {
 
   void set_triple() {
     flags |= Triple;
+  }
+
+  void set_bytes() {
+    flags |= Bytes;
   }
 
   void set_end_character(int32_t character) {
@@ -90,12 +99,14 @@ struct Scanner {
   unsigned serialize(char *buffer) {
     size_t i = 0;
 
-    size_t stack_size = delimiter_stack.size();
-    if (stack_size > UINT8_MAX) stack_size = UINT8_MAX;
-    buffer[i++] = stack_size;
+    size_t delimiter_count = delimiter_stack.size();
+    if (delimiter_count > UINT8_MAX) delimiter_count = UINT8_MAX;
+    buffer[i++] = delimiter_count;
 
-    memcpy(&buffer[i], delimiter_stack.data(), stack_size);
-    i += stack_size;
+    if (delimiter_count > 0) {
+      memcpy(&buffer[i], delimiter_stack.data(), delimiter_count);
+    }
+    i += delimiter_count;
 
     vector<uint16_t>::iterator
       iter = indent_length_stack.begin() + 1,
@@ -118,7 +129,9 @@ struct Scanner {
 
       size_t delimiter_count = (uint8_t)buffer[i++];
       delimiter_stack.resize(delimiter_count);
-      memcpy(delimiter_stack.data(), &buffer[i], delimiter_count);
+      if (delimiter_count > 0) {
+        memcpy(delimiter_stack.data(), &buffer[i], delimiter_count);
+      }
       i += delimiter_count;
 
       for (; i < length; i++) {
@@ -153,6 +166,17 @@ struct Scanner {
         } else if (lexer->lookahead == '\\') {
           if (delimiter.is_raw()) {
             lexer->advance(lexer, false);
+          } else if (delimiter.is_bytes()) {
+              lexer->mark_end(lexer);
+              lexer->advance(lexer, false);
+              if (lexer->lookahead == 'N' || lexer->lookahead == 'u' || lexer->lookahead == 'U') {
+                // In bytes string, \N{...}, \uXXXX and \UXXXXXXXX are not escape sequences
+                // https://docs.python.org/3/reference/lexical_analysis.html#string-and-bytes-literals
+                lexer->advance(lexer, false);
+              } else {
+                  lexer->result_symbol = STRING_CONTENT;
+                  return has_content;
+              }
           } else {
             lexer->mark_end(lexer);
             lexer->result_symbol = STRING_CONTENT;
@@ -197,12 +221,12 @@ struct Scanner {
 
     lexer->mark_end(lexer);
 
-    bool has_comment = false;
-    bool has_newline = false;
+    bool found_end_of_line = false;
     uint32_t indent_length = 0;
+    int32_t first_comment_indent_length = -1;
     for (;;) {
       if (lexer->lookahead == '\n') {
-        has_newline = true;
+        found_end_of_line = true;
         indent_length = 0;
         skip(lexer);
       } else if (lexer->lookahead == ' ') {
@@ -215,8 +239,12 @@ struct Scanner {
         indent_length += 8;
         skip(lexer);
       } else if (lexer->lookahead == '#') {
-        has_comment = true;
-        while (lexer->lookahead && lexer->lookahead != '\n') skip(lexer);
+        if (first_comment_indent_length == -1) {
+          first_comment_indent_length = (int32_t)indent_length;
+        }
+        while (lexer->lookahead && lexer->lookahead != '\n') {
+          skip(lexer);
+        }
         skip(lexer);
         indent_length = 0;
       } else if (lexer->lookahead == '\\') {
@@ -226,35 +254,43 @@ struct Scanner {
         } else {
           return false;
         }
+      } else if (lexer->lookahead == '\f') {
+        indent_length = 0;
+        skip(lexer);
       } else if (lexer->lookahead == 0) {
-        if (valid_symbols[DEDENT] && indent_length_stack.size() > 1) {
-          indent_length_stack.pop_back();
-          lexer->result_symbol = DEDENT;
-          return true;
-        }
-
-        if (valid_symbols[NEWLINE]) {
-          lexer->result_symbol = NEWLINE;
-          return true;
-        }
-
+        indent_length = 0;
+        found_end_of_line = true;
         break;
       } else {
         break;
       }
     }
 
-    if (has_newline) {
-      if (indent_length > indent_length_stack.back() && valid_symbols[INDENT]) {
-        indent_length_stack.push_back(indent_length);
-        lexer->result_symbol = INDENT;
-        return true;
-      }
+    if (found_end_of_line) {
+      if (!indent_length_stack.empty()) {
+        uint16_t current_indent_length = indent_length_stack.back();
 
-      if (indent_length < indent_length_stack.back() && valid_symbols[DEDENT]) {
-        indent_length_stack.pop_back();
-        lexer->result_symbol = DEDENT;
-        return true;
+        if (
+          valid_symbols[INDENT] &&
+          indent_length > current_indent_length
+        ) {
+          indent_length_stack.push_back(indent_length);
+          lexer->result_symbol = INDENT;
+          return true;
+        }
+
+        if (
+          valid_symbols[DEDENT] &&
+          indent_length < current_indent_length &&
+
+          // Wait to create a dedent token until we've consumed any comments
+          // whose indentation matches the current block.
+          first_comment_indent_length < (int32_t)current_indent_length
+        ) {
+          indent_length_stack.pop_back();
+          lexer->result_symbol = DEDENT;
+          return true;
+        }
       }
 
       if (valid_symbols[NEWLINE]) {
@@ -263,7 +299,7 @@ struct Scanner {
       }
     }
 
-    if (!has_comment && valid_symbols[STRING_START]) {
+    if (first_comment_indent_length == -1 && valid_symbols[STRING_START]) {
       Delimiter delimiter;
 
       bool has_flags = false;
@@ -272,11 +308,9 @@ struct Scanner {
           delimiter.set_format();
         } else if (lexer->lookahead == 'r' || lexer->lookahead == 'R') {
           delimiter.set_raw();
-        } else if (
-          lexer->lookahead != 'b' &&
-          lexer->lookahead != 'B' &&
-          lexer->lookahead != 'u' &&
-          lexer->lookahead != 'U') {
+        } else if (lexer->lookahead == 'b' || lexer->lookahead == 'B') {
+          delimiter.set_bytes();
+        } else if (lexer->lookahead != 'u' && lexer->lookahead != 'U') {
           break;
         }
         has_flags = true;

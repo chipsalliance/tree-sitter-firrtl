@@ -1,0 +1,126 @@
+============================================
+when
+============================================
+
+circuit top_mod :
+  module top_mod :
+    when c1 : y <= b
+    a <= b
+----
+
+(source_file
+  (circuit (id)
+    (module (id)
+      (simple_stmt (stmt (when
+        (exp (id))
+        (suite (simple_stmt (stmt (exp (id)) (exp (id)))))
+      )))
+      (simple_stmt (stmt (exp (id)) (exp (id))))
+    )
+  )
+)
+
+============================================
+when /
+============================================
+
+circuit top_mod :
+  module top_mod :
+    when c1 :
+      y <= b
+      z <= b
+    a <= b
+----
+
+(source_file
+  (circuit (id)
+    (module (id)
+      (simple_stmt (stmt (when
+        (exp (id))
+        (suite
+          (simple_stmt (stmt (exp (id)) (exp (id))))
+          (simple_stmt (stmt (exp (id)) (exp (id))))
+        )
+      )))
+      (simple_stmt (stmt (exp (id)) (exp (id))))
+    )
+  )
+)
+
+============================================
+when else
+============================================
+
+circuit top_mod :
+  module top_mod :
+    when c1 : y <= b else : y <= c
+    a <= b
+----
+
+(source_file
+  (circuit (id)
+    (module (id)
+      (simple_stmt (stmt (when
+        (exp (id))
+        (suite (simple_stmt (stmt (exp (id)) (exp (id)))))
+        (suite (simple_stmt (stmt (exp (id)) (exp (id)))))
+      )))
+      (simple_stmt (stmt (exp (id)) (exp (id))))
+    )
+  )
+)
+
+============================================
+when / else /
+============================================
+
+circuit top_mod :
+  module top_mod :
+    when c1 :
+      y <= b
+    else :
+      y <= c
+    a <= b
+----
+
+(source_file
+  (circuit (id)
+    (module (id)
+      (simple_stmt (stmt (when
+        (exp (id))
+        (suite (simple_stmt (stmt (exp (id)) (exp (id)))))
+        (suite (simple_stmt (stmt (exp (id)) (exp (id)))))
+      )))
+      (simple_stmt (stmt (exp (id)) (exp (id))))
+    )
+  )
+)
+
+============================================
+when / else when
+============================================
+
+circuit top_mod :
+  module top_mod :
+    when c1 :
+      y <= b
+    else when c2 :
+      y <= c
+----
+
+(source_file
+  (circuit (id)
+    (module (id)
+      (simple_stmt (stmt (when
+        (exp (id))
+        (suite (simple_stmt (stmt (exp (id)) (exp (id)))))
+        (when
+          (exp (id))
+          (suite
+            (simple_stmt (stmt (exp (id)) (exp (id))))
+          )
+        )
+      )))
+    )
+  )
+)

@@ -84,7 +84,7 @@ const rules = {
     $._newline
   ),
 
-  simple_stmt: $ => seq($.stmt, $._newline),
+  simple_stmt: $ => $.stmt, // choice($.stmt, $._newline),
 
   simple_reset0: $ => seq('reset', '=>', '(', $.exp, ',', $.exp, ')'),
 
@@ -154,14 +154,24 @@ const rules = {
     seq($._indent, repeat1($.simple_stmt), $._dedent)
   ),
 
-  when: $ => seq('when', $.exp, ':', optional($.info),
-    optional($.suite),
-    optseq('else',
-      choice($.when,
-        seq(':', optional($.info), optional($.suite))
+  when: $ => prec.left(seq(
+    'when',
+    $.exp,
+    ':',
+    optional($.info),
+    $.suite,
+    optseq(
+      'else',
+      choice(
+        $.when,
+        seq(
+          ':',
+          optional($.info),
+          $.suite
+        )
       )
     )
-  ),
+  )),
 
   stop: $ => seq('stop', '(', $.exp, ',', $.exp, ',', $.intLit, ')', optional($.info)),
 
