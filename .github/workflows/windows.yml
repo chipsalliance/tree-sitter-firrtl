@@ -1,17 +1,11 @@
-name: Node CI
-
+name: Windows
 on: [push]
-
 jobs:
   build:
-
-    runs-on: ${{ matrix.os }}
-
+    runs-on: windows-latest
     strategy:
       matrix:
-        node-version: [10, 12, 14, 15]
-        os: [ubuntu-latest, macOS-latest] # windows-latest
-
+        node-version: [10, 12, 14, 15, 16]
     steps:
     - uses: actions/checkout@v1
     - name: Use Node.js ${{ matrix.node-version }}
