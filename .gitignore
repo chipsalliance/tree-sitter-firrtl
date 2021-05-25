@@ -4,3 +4,4 @@ package-lock.json
 src/*
 *.log
 !src/scanner.cc
+!src/parser.c
