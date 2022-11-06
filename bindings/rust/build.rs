@@ -1,5 +1,15 @@
+use std::env;
+use std::process::Command;
+
+
 fn main() {
     let src_dir = std::path::Path::new("src");
+    let curr_dir = env::var_os("CARGO_MANIFEST_DIR").unwrap();
+    Command::new("npm")
+        .current_dir(curr_dir)
+        .arg("install")
+        .status()
+        .unwrap();
 
     let mut c_config = cc::Build::new();
     c_config.include(&src_dir);
