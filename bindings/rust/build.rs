@@ -1,5 +1,15 @@
+use std::env;
+use std::process::Command;
+
+
 fn main() {
     let src_dir = std::path::Path::new("src");
+    let curr_dir = env::var_os("CARGO_MANIFEST_DIR").unwrap();
+    Command::new("npm")
+        .current_dir(curr_dir)
+        .arg("install")
+        .status()
+        .unwrap();
 
     let mut c_config = cc::Build::new();
     c_config.include(&src_dir);
@@ -25,7 +35,6 @@ fn main() {
     // If your language uses an external scanner written in C++,
     // then include this block of code:
 
-    /*
     let mut cpp_config = cc::Build::new();
     cpp_config.cpp(true);
     cpp_config.include(&src_dir);
@@ -36,5 +45,4 @@ fn main() {
     cpp_config.file(&scanner_path);
     cpp_config.compile("scanner");
     println!("cargo:rerun-if-changed={}", scanner_path.to_str().unwrap());
-    */
 }

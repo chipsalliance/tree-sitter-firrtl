@@ -49,4 +49,16 @@ mod tests {
             .set_language(super::language())
             .expect("Error loading firrtl language");
     }
+
+    #[test]
+    fn test_can_parse_grammar() {
+        let mut parser = tree_sitter::Parser::new();
+        let source_code = "circuit Adder :\n\tmodule Adder :\n\t\tinput clock: Clock\n\t\tskip";
+        parser
+            .set_language(super::language())
+            .expect("Error loading firrtl language");
+        let tree = parser.parse(source_code, None).unwrap();
+        let root_node = tree.root_node();
+        assert_eq!(tree.root_node().to_sexp(), "(source_file (circuit (id) (module (id) (port (dir) (id) (type)) (simple_stmt (stmt (skip))))))");
+    }
 }
