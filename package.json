@@ -3,42 +3,38 @@
   "version": "0.7.0",
   "description": "FIRRTL grammar for tree-sitter",
   "main": "bindings/node",
-  "scripts": {
-    "gen": "tree-sitter generate",
-    "install": "node bin/install.js",
-    "prepare": "node bin/install.js",
-    "test": "eslint grammar.js && tree-sitter test"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/chipsalliance/tree-sitter-firrtl.git"
-  },
-  "author": "Aliaksei Chapyzhenka",
+  "keywords": [
+    "parser",
+    "lexer",
+    "firrtl"
+  ],
+  "author": "Aliaksei Chapyzhenka <alex.drom@gmail.com>",
+  "contributors": [
+    "Amaan Qureshi <amaanq12@gmail.com>",
+    "Andrew Young <youngar17@gmail.com>"
+  ],
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/chipsalliance/tree-sitter-firrtl/issues"
   },
   "homepage": "https://github.com/chipsalliance/tree-sitter-firrtl#readme",
-  "files": [
-    "bin",
-    "src",
-    "grammar.js",
-    "binding.gyp",
-    "bindings/node"
-  ],
-  "keywords": [
-    "parser",
-    "tree-sitter",
-    "verilog"
-  ],
   "dependencies": {
     "nan": "^2.14.2"
   },
   "devDependencies": {
     "@drom/eslint-config": "^0.10.0",
-    "eslint": "^7.22.0",
-    "tree-sitter-cli": "^0.18",
-    "web-tree-sitter": "^0.18"
+    "eslint": "^8.35.0",
+    "tree-sitter-cli": "^0.20.7",
+    "web-tree-sitter": "^0.20.7"
+  },
+  "repository": "https://github.com/chipsalliance/tree-sitter-firrtl",
+  "scripts": {
+    "build": "tree-sitter generate && node-gyp build",
+    "gen": "tree-sitter generate",
+    "lint": "eslint grammar.js",
+    "parse": "tree-sitter parse",
+    "test": "tree-sitter test && script/parse-examples",
+    "test-windows": "tree-sitter test"
   },
   "tree-sitter": [
     {
@@ -46,10 +42,49 @@
       "injection-regex": "firrtl",
       "file-types": [
         "fir"
+      ],
+      "highlights": [
+        "queries/highlights.scm"
+      ],
+      "indents": [
+        "queries/indents.scm"
       ]
     }
   ],
   "eslintConfig": {
-    "extends": "@drom/eslint-config/eslint4/node8"
+    "extends": "@drom/eslint-config/eslint4/node8",
+    "env": {
+      "commonjs": true,
+      "es2021": true
+    },
+    "overrides": [],
+    "parserOptions": {
+      "ecmaVersion": "latest"
+    },
+    "rules": {
+      "indent": [
+        "error",
+        2,
+        {
+          "SwitchCase": 1
+        }
+      ],
+      "max-len": [
+        "error",
+        {
+          "code": 120,
+          "ignoreComments": true,
+          "ignoreUrls": true,
+          "ignoreStrings": true
+        }
+      ],
+      "no-undef": "off",
+      "no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "_"
+        }
+      ]
+    }
   }
 }

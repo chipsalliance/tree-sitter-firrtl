@@ -1,6 +1,6 @@
-node_modules
-build
+Cargo.lock
 package-lock.json
-src/*
-*.log
-!src/scanner.cc
+/build
+/node_modules
+/examples/*/
+/target
