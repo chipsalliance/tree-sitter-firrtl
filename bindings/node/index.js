@@ -1,5 +1,3 @@
-'use strict';
-
 try {
   module.exports = require('../../build/Release/tree_sitter_firrtl_binding');
 } catch (error1) {
