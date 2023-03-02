@@ -1,11 +1,11 @@
 [package]
 name = "tree-sitter-firrtl"
 description = "firrtl grammar for the tree-sitter parsing library"
-version = "0.7.0"
+version = "0.8.0"
 authors = [
-	"Aliaksei Chapyzhenka <alex.drom@gmail.com>",
-	"Amaan Qureshi <amaanq12@gmail.com>",
-	"Andrew Young <youngar17@gmail.com>",
+    "Aliaksei Chapyzhenka <alex.drom@gmail.com>",
+    "Amaan Qureshi <amaanq12@gmail.com>",
+    "Andrew Young <youngar17@gmail.com>",
 ]
 license = "MIT"
 readme = "bindings/rust/README.md"
