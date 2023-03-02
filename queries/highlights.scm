@@ -1,91 +1,187 @@
-;;; Highlighting for firrtl
+; Namespaces
 
-; circuit
-(circuit "circuit" @keyword.function)
+(circuit (identifier) @namespace)
 
-; module 
-(module
-["module"
-"extmodule"] @keyword.function)
-(port (dir) @keyword)
+(module (identifier) @namespace)
 
-; extmodule
-(parameter "parameter" @keyword)
-(defname "defname" @keyword)
+; Types
 
-; mem
-(mdir) @keyword
-(mem "mem" @keyword)
-(memField) @keyword
-(ruw) @keyword
+((identifier) @type
+  (#lua-match? @type "^[A-Z][A-Za-z0-9_$]*$"))
 
-; wire
-(wire "wire" @keyword)
+; Keywords
 
-; cmem
-(cmem "cmem" @keyword)
+[
+  "circuit"
+  "module"
+  "extmodule"
 
-; smem
-(smem "smem" @keyword)
+  "flip"
+  "parameter"
+  "reset"
+  "wire"
 
-; reg
-(reg ["reg" "with"] @keyword)
-(simple_reset0 ["reset" "=>"] @keyword)
+  "cmem"
+  "smem"
+  "mem"
 
-; node
-(node "node" @keyword)
+  "reg"
+  "with"
+  "mport"
+  "inst"
+  "of"
+  "node"
+  "is"
+  "invalid"
+  "skip"
 
-; when
-(when
+  "infer"
+  "read"
+  "write"
+  "rdwr"
+] @keyword
+
+[
+  "defname"
+] @keyword.variable
+
+; Qualifiers
+
+[
+  "input"
+  "output"
+] @type.qualifier ; Could be storageclass tbh..
+
+; Conditionals
+
 [
   "when"
   "else"
-] @conditional)
+] @conditional
 
-; stop
-(stop "stop" @keyword)
+; Annotations
 
-; printf
-(printf "printf" @keyword)
+(info) @annotation
 
-; verif
-(verif ["assert" "assume" "cover"] @keyword)
+; Builtins
 
-; skip
-(skip) @keyword
-
-; attach
-(attach "attach" @keyword)
-
-; Primitives
-(exp ["mux" "validif"] @function)
-(primop) @function
-
-; (IntStrLit) @string
-(StringLit) @string
-
-; literals
 [
-(UnsignedInt)
-(SignedInt)
-(DoubleLit)
+  "stop"
+  "printf"
+  "assert"
+  "assume"
+  "cover"
+  "attach"
+  "mux"
+  "validif"
+] @function.builtin
+
+[
+  "UInt"
+  "SInt"
+  "Analog"
+  "Fixed"
+  "Clock"
+  "AsyncReset"
+  "Reset"
+] @type.builtin
+
+; Fields
+
+[
+  "data-type"
+  "depth"
+  "read-latency"
+  "write-latency"
+  "read-under-write"
+  "reader"
+  "writer"
+  "readwriter"
+] @field.builtin
+
+((field_id) @field
+  (#set! "priority" 105))
+
+(port (identifier) @field)
+
+(wire (identifier) @field)
+
+(cmem (identifier) @field)
+
+(smem (identifier) @field)
+
+(memory (identifier) @field)
+
+(register (identifier) @field)
+
+; Parameters
+
+(primitive_operation (identifier) @parameter)
+
+(mux (identifier) @parameter)
+(printf (identifier) @parameter)
+(reset (identifier) @parameter)
+(stop (identifier) @parameter)
+
+; Variables
+
+(identifier) @variable
+
+; Operators
+
+(primop) @keyword.operator
+
+[
+  "+"
+  "-"
+  "="
+  "=>"
+  "<="
+  "<-"
+] @operator
+
+; Literals
+
+[
+  (uint)
+  (number)
 ] @number
 
-; types
+(number_str) @string.special
+
+(double) @float
+
+(string) @string
+
+(escape_sequence) @string.escape
+
 [
-(type)
-(litType)
-] @type
+  "old"
+  "new"
+  "undefined"
+] @constant.builtin
 
-; comments
-[(info) (comment)] @comment
+; Punctuation
 
-["(" ")" "<" ">" "{" "}"] @punctuation.bracket
+[ "{" "}" ] @punctuation.bracket
+
+[ "[" "]" ] @punctuation.bracket
+
+[ "<" ">" ] @punctuation.bracket
+
+[ "(" ")" ] @punctuation.bracket
+
+[
+  ","
+  "."
+  ":"
+] @punctuation.delimiter
+
+; Comments
+
+(comment) @comment @spell
+
 ["=>" "<=" "="] @operator
-["," ":"] @punctuation.delimiter
-
-(id) @variable
 
 ; Error
 (ERROR) @error
-
