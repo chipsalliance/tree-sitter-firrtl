@@ -86,10 +86,12 @@ module.exports = grammar({
     ),
 
     port: $ => seq(
-      $.dir, $.identifier, ':', $.type, optional($.info), $._newline,
+      $.dir, $.identifier, ':', optional($.qualifier), $.type, optional($.info), $._newline
     ),
 
     dir: _ => choice('input', 'output'),
+
+    qualifier: _ => choice('const'),
 
     type: $ => choice(
       seq(
@@ -381,7 +383,7 @@ module.exports = grammar({
 
     _escape_sequence: $ =>
       choice(
-        prec(2, token.immediate(seq('\\', /[^abfnrtvxu'\"\\\?]/))),
+        prec(2, token.immediate(seq('\\', /[^abfnrtvxu'"\\?]/))),
         prec(1, $.escape_sequence)
       ),
     escape_sequence: _ => token.immediate(seq(

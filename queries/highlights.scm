@@ -47,10 +47,14 @@
 
 ; Qualifiers
 
+(qualifier) @type.qualifier
+
+; Storageclasses
+
 [
   "input"
   "output"
-] @type.qualifier ; Could be storageclass tbh..
+] @storageclass
 
 ; Conditionals
 

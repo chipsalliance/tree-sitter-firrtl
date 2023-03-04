@@ -586,6 +586,10 @@
           "named": true
         },
         {
+          "type": "qualifier",
+          "named": true
+        },
+        {
           "type": "type",
           "named": true
         }
@@ -642,6 +646,11 @@
         }
       ]
     }
+  },
+  {
+    "type": "qualifier",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "raw_string",
@@ -1186,6 +1195,10 @@
   {
     "type": "comment",
     "named": true
+  },
+  {
+    "type": "const",
+    "named": false
   },
   {
     "type": "cover",
