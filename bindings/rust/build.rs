@@ -9,7 +9,9 @@ fn main() {
         .current_dir(curr_dir)
         .arg("install")
         .status()
-        .unwrap();
+        .unwrap_or_else(|_e| {
+            panic!("Please make sure npm, make, gcc and g++ are installed. ");
+        });
 
     let mut c_config = cc::Build::new();
     c_config.include(&src_dir);
