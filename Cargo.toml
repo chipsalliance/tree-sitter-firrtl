@@ -3,9 +3,9 @@ name = "tree-sitter-firrtl"
 description = "firrtl grammar for the tree-sitter parsing library"
 version = "0.8.0"
 authors = [
-    "Aliaksei Chapyzhenka <alex.drom@gmail.com>",
-    "Amaan Qureshi <amaanq12@gmail.com>",
-    "Andrew Young <youngar17@gmail.com>",
+	"Aliaksei Chapyzhenka <alex.drom@gmail.com>",
+	"Amaan Qureshi <amaanq12@gmail.com>",
+	"Andrew Young <youngar17@gmail.com>",
 ]
 license = "MIT"
 readme = "bindings/rust/README.md"
@@ -22,7 +22,7 @@ include = ["bindings/rust/*", "grammar.js", "queries/*", "src/*"]
 path = "bindings/rust/lib.rs"
 
 [dependencies]
-tree-sitter = "0.20.9"
+tree-sitter = "~0.20.10"
 
 [build-dependencies]
 cc = "1.0"
