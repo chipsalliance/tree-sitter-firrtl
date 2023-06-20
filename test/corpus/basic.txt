@@ -17,7 +17,7 @@ circuit C1 :
 ----
 
 (source_file
-  (circuit (id)))
+  (circuit (identifier)))
 
 ============================================
 empty module
@@ -29,8 +29,8 @@ circuit C1 :
 ----
 
 (source_file
-  (circuit (id)
-    (module (id))))
+  (circuit (identifier)
+    (module (identifier))))
 
 ============================================
 module with ios
@@ -45,8 +45,23 @@ circuit C1 :
 ----
 
 (source_file
-  (circuit (id)
-    (module (id)
-      (port (dir) (id) (type))
-      (port (dir) (id) (type (intLit (UnsignedInt))))
-      (port (dir) (id) (type (intLit (UnsignedInt)))))))
+  (circuit
+	(identifier)
+	(module
+	  (identifier)
+	  (port
+		(dir)
+		(identifier)
+		(type))
+	  (port
+		(dir)
+		(identifier)
+		(type
+		  (number
+			(number))))
+	  (port
+		(dir)
+		(identifier)
+		(type
+		  (number
+			(number)))))))

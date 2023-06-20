@@ -1,11 +1,12 @@
 [
  (circuit)
  (module)
- (mem)
+ (memory)
  (when)
+ (else)
 ] @indent
 
-(when "else" @branch)
-
-(comment) @ignore
-
+[
+  (ERROR)
+  (comment)
+] @auto
